@@ -18,23 +18,19 @@ class FileOrganizer:
             'f': r'f_(\d+)',
             'p': r'p_(\d+)',
             'a': r'a_(\d+)',
-            'datetime': r'\d{4}-\d{2}-\d{2}'  
+            'datetime': r'(\d{4}-\d{2}-\d{2})'  
         }
-        pattern_dirs = []
-
-        for key in patterns:
-            pattern_dir = os.path.join(self.directory, key)
-            os.makedirs(pattern_dir, exist_ok=True)
-            pattern_dirs.append(pattern_dir)
 
         for filename in os.listdir(self.directory):
+            match_data = {}
             for key, pattern in patterns.items():
                 match = re.search(pattern, filename)
                 if match:
-                    self.move_file(filename, key, match.group(1))
-                    break
-
-        return pattern_dirs
+                    match_data[key] = match.group(1)
+            
+            if len(match_data) == len(patterns):
+                folder_name = f"amp_{match_data['amp']}_f_{match_data['f']}_p_{match_data['p']}_a_{match_data['a']}_{match_data['datetime']}"
+                self.move_file(filename, folder_name, '')
 
     def organize_by_keywords(self):
         for filename in os.listdir(self.directory):
@@ -44,7 +40,7 @@ class FileOrganizer:
                     break
 
     def move_file(self, filename, category, value):
-        target_dir = os.path.join(self.directory, category, value)
+        target_dir = os.path.join(self.directory, category)
         os.makedirs(target_dir, exist_ok=True)
         os.rename(
             os.path.join(self.directory, filename),
